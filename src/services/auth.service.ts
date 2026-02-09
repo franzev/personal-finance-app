@@ -1,0 +1,126 @@
+import { createClient } from '@/lib/supabase/client';
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface SignUpData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+export async function login(credentials: LoginCredentials): Promise<AuthResponse> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: credentials.email,
+    password: credentials.password,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data.user) {
+    throw new Error('Login failed. Please try again.');
+  }
+
+  return {
+    user: {
+      id: data.user.id,
+      name: data.user.user_metadata?.name || data.user.email?.split('@')[0] || '',
+      email: data.user.email || '',
+    },
+  };
+}
+
+export async function signUp(data: SignUpData): Promise<AuthResponse> {
+  const supabase = createClient();
+
+  const { data: authData, error } = await supabase.auth.signUp({
+    email: data.email,
+    password: data.password,
+    options: {
+      data: {
+        name: data.name,
+      },
+    },
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!authData.user) {
+    throw new Error('Sign up failed. Please try again.');
+  }
+
+  return {
+    user: {
+      id: authData.user.id,
+      name: data.name,
+      email: authData.user.email ?? '',
+    },
+  };
+}
+
+export async function logout(): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  const supabase = createClient();
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function getCurrentUser() {
+  const supabase = createClient();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    return null;
+  }
+
+  return {
+    id: user.id,
+    name: user.user_metadata?.name || user.email?.split('@')[0] || '',
+    email: user.email || '',
+  };
+}
+
+export async function updatePassword(newPassword: string): Promise<void> {
+  const supabase = createClient();
+
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}

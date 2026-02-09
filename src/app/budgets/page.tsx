@@ -1,0 +1,175 @@
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import { Button } from '@/components';
+import Image from 'next/image';
+import { Budget } from '@/lib/types';
+import { getThemeNameFromHex, getHexFromThemeName } from '@/lib/constants/constants';
+import { BudgetCard, BudgetFormModal, Card, DeleteConfirmationModal, SpendingSummary } from '@/components';
+import {
+  useBudgets,
+  useTransactions,
+  useCreateBudget,
+  useUpdateBudget,
+  useDeleteBudget,
+} from '@/hooks/useFinanceData';
+
+export default function BudgetsPage() {
+  const { data: budgets = [], isLoading: isLoadingBudgets } = useBudgets();
+  const { data: transactions = [], isLoading: isLoadingTransactions } = useTransactions();
+
+  const createBudget = useCreateBudget();
+  const updateBudget = useUpdateBudget();
+  const deleteBudget = useDeleteBudget();
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
+  const [deletingBudget, setDeletingBudget] = useState<Budget | null>(null);
+
+  const isLoading = isLoadingBudgets || isLoadingTransactions;
+
+  const budgetsWithSpending = useMemo(() => {
+    return budgets.map((budget) => {
+      const categoryTransactions = transactions.filter(
+        (t) => t.category === budget.category && t.amount < 0,
+      );
+      const spent = categoryTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+      return {
+        budget,
+        spent,
+        transactions: categoryTransactions.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+        ),
+      };
+    });
+  }, [budgets, transactions]);
+
+  const handleAddBudget = (data: { category: string; maxSpend: number; theme: string }) => {
+    createBudget.mutate(
+      {
+        category: data.category,
+        maximum: data.maxSpend,
+        theme: getHexFromThemeName(data.theme) || data.theme,
+      },
+      {
+        onSuccess: () => {
+          setIsAddModalOpen(false);
+        },
+      },
+    );
+  };
+
+  const handleEditBudget = (data: { category: string; maxSpend: number; theme: string }) => {
+    if (!editingBudget || !editingBudget.id) return;
+    updateBudget.mutate(
+      {
+        id: editingBudget.id,
+        maximum: data.maxSpend,
+        theme: getHexFromThemeName(data.theme) || data.theme,
+      },
+      {
+        onSuccess: () => {
+          setEditingBudget(null);
+        },
+      },
+    );
+  };
+
+  const handleDeleteBudget = () => {
+    if (!deletingBudget || !deletingBudget.id) return;
+    deleteBudget.mutate(deletingBudget.id, {
+      onSuccess: () => {
+        setDeletingBudget(null);
+      },
+    });
+  };
+
+  return (
+    <div className="bg-[#F8F4F0] p-4 pb-[68px] sm:pb-[90px] md:p-8 md:pb-8">
+      <div className="mx-auto max-w-[1440px]">
+        <div className="mb-6 flex items-center justify-between md:mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Budgets</h1>
+          <Button onClick={() => setIsAddModalOpen(true)}>+ Add New Budget</Button>
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(320px,400px)_1fr] lg:gap-8 xl:grid-cols-[400px_1fr]">
+            <div className="h-[400px] animate-pulse rounded-lg bg-gray-200" />
+            <div className="space-y-6">
+              <div className="h-[300px] animate-pulse rounded-lg bg-gray-200" />
+              <div className="h-[300px] animate-pulse rounded-lg bg-gray-200" />
+            </div>
+          </div>
+        ) : budgetsWithSpending.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(320px,400px)_1fr] lg:gap-8 xl:grid-cols-[400px_1fr]">
+            <div className="h-fit">
+              <SpendingSummary budgetsWithSpending={budgetsWithSpending} />
+            </div>
+
+            <div className="space-y-6">
+              {budgetsWithSpending.map(({ budget, spent, transactions }) => (
+                <BudgetCard
+                  key={budget.category}
+                  budget={budget}
+                  spent={spent}
+                  transactions={transactions}
+                  onEdit={() => setEditingBudget(budget)}
+                  onDelete={() => setDeletingBudget(budget)}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <Card className="p-12 text-center">
+            <div className="mx-auto max-w-md">
+              <Image
+                src="/assets/images/icon-nav-budgets.svg"
+                alt="No budgets"
+                width={64}
+                height={64}
+                className="mx-auto mb-4 opacity-20"
+              />
+              <h3 className="mb-2 text-xl font-bold text-gray-900">No budgets yet</h3>
+              <p className="mb-6 text-gray-600">
+                Create your first budget to start tracking your spending across different
+                categories.
+              </p>
+              <Button onClick={() => setIsAddModalOpen(true)}>+ Add New Budget</Button>
+            </div>
+          </Card>
+        )}
+
+        <BudgetFormModal
+          mode="add"
+          open={isAddModalOpen}
+          onOpenChange={setIsAddModalOpen}
+          onSubmit={handleAddBudget}
+        />
+
+        {editingBudget && (
+          <BudgetFormModal
+            mode="edit"
+            open={!!editingBudget}
+            onOpenChange={(open) => !open && setEditingBudget(null)}
+            onSubmit={handleEditBudget}
+            initialData={{
+              category: editingBudget.category,
+              maxSpend: editingBudget.maximum,
+              theme: getThemeNameFromHex(editingBudget.theme) || editingBudget.theme,
+            }}
+          />
+        )}
+
+        {deletingBudget && (
+          <DeleteConfirmationModal
+            open={!!deletingBudget}
+            onOpenChange={(open) => !open && setDeletingBudget(null)}
+            onConfirm={handleDeleteBudget}
+            title="Budget"
+            itemName={deletingBudget.category}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
