@@ -82,3 +82,8 @@ TODO
 ## Author
 
 - Frontend Mentor - [@franzev](https://www.frontendmentor.io/profile/franzev)
+
+## Credential
+
+demo@finance.app
+demo2026
