@@ -1,6 +1,4 @@
-import { Card, Skeleton } from '@/components';
-import { SectionHeader } from '../SectionHeader';
-import { RecurringBillCard } from '../RecurringBillCard';
+import { Card, RecurringBillCard, SectionHeader, Skeleton } from '@/components';
 import type { Transaction } from '@/lib/types';
 
 interface RecurringBillsSectionProps {

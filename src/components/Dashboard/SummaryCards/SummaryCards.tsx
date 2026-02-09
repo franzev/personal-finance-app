@@ -1,5 +1,4 @@
-import { Skeleton } from '@/components';
-import { StatCard } from '../StatCard';
+import { Skeleton, StatCard } from '@/components';
 
 interface SummaryCardsProps {
   current: number;

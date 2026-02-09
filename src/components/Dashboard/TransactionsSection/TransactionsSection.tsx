@@ -1,6 +1,4 @@
-import { Card, Skeleton } from '@/components';
-import { SectionHeader } from '../SectionHeader';
-import { TransactionItem } from '../TransactionItem';
+import { Card, SectionHeader, Skeleton, TransactionItem } from '@/components';
 import type { Transaction } from '@/lib/types';
 
 interface TransactionsSectionProps {

@@ -1,7 +1,5 @@
 import Image from 'next/image';
-import { Card, Skeleton } from '@/components';
-import { SectionHeader } from '../SectionHeader';
-import { PotItem } from '../PotItem';
+import { Card, PotItem, SectionHeader, Skeleton } from '@/components';
 import type { Pot } from '@/lib/types';
 
 interface PotsSectionProps {

@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from './Dialog';
-import { Button } from '../Button';
+import { Button } from '@/components';
 
 export const Default: Story = () => (
   <Dialog>

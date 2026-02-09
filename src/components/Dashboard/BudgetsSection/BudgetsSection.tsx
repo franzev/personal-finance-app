@@ -1,7 +1,5 @@
-import { Card, Skeleton } from '@/components';
-import { SectionHeader } from '../SectionHeader';
-import { BudgetItem } from '../BudgetItem';
-import { BudgetDonutChart } from '@/components';
+import { BudgetDonutChart, BudgetItem, Card, SectionHeader, Skeleton } from '@/components';
+
 import type { Budget, Transaction } from '@/lib/types';
 
 interface BudgetsSectionProps {

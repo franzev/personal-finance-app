@@ -8,7 +8,7 @@ import {
   CardContent,
   CardFooter,
 } from './Card';
-import { Button } from '../Button';
+import { Button } from '@/components';
 
 export const Default: Story = () => (
   <Card className="w-[350px]">
