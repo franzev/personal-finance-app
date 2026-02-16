@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useForm, UseFormReturn, FieldValues, DefaultValues } from 'react-hook-form';
+import { logger } from '@/lib/logger';
 
 interface UseFormModalOptions<TFormData extends FieldValues, TSubmitData = TFormData> {
   mode: 'add' | 'edit' | 'action';
@@ -54,7 +55,7 @@ export function useFormModal<TFormData extends FieldValues, TSubmitData = TFormD
       reset(defaultValuesRef.current);
       onOpenChange(false);
     } catch (error) {
-      console.error(`Failed to ${mode}:`, error);
+      logger.error(`Failed to ${mode}`, error);
       setSubmitError(error instanceof Error ? error.message : errorMessage);
     }
   };

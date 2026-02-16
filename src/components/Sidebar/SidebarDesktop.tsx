@@ -9,6 +9,7 @@ import type { SidebarDesktopProps } from './types';
 import { Button, NAV_ITEMS, SidebarNavItem } from '@/components';
 import { logout } from '@/services/auth.service';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 export function SidebarDesktop({ collapsed, toggle, isActive }: SidebarDesktopProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -20,7 +21,7 @@ export function SidebarDesktop({ collapsed, toggle, isActive }: SidebarDesktopPr
       await logout();
       router.push('/login');
     } catch (error) {
-      console.error('Logout failed:', error);
+      logger.error('Logout failed', error);
       setIsLoggingOut(false);
     }
   };

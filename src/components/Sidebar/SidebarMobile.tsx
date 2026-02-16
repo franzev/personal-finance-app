@@ -9,6 +9,7 @@ import type { SidebarMobileProps } from './types';
 import { Button } from '@/components';
 import { logout } from '@/services/auth.service';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 export function SidebarMobile({ isActive }: SidebarMobileProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -21,7 +22,7 @@ export function SidebarMobile({ isActive }: SidebarMobileProps) {
       await logout();
       router.push('/login');
     } catch (error) {
-      console.error('Logout failed:', error);
+      logger.error('Logout failed', error);
       setIsLoggingOut(false);
     }
   };
