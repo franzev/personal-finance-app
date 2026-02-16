@@ -11,11 +11,11 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   const isAuthPage = AUTH_ROUTES.includes(pathname);
 
   if (isAuthPage) {
-    return <div className="min-h-screen bg-(--primary-light)">{children}</div>;
+    return <div className="min-h-screen bg-[#F8F4F0]">{children}</div>;
   }
 
   return (
-    <div className="flex h-screen bg-(--primary-light)">
+    <div className="flex h-screen bg-[#F8F4F0]">
       <Suspense
         fallback={
           <aside
