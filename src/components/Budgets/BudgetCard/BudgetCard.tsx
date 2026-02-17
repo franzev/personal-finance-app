@@ -38,18 +38,18 @@ export const BudgetCard = ({ budget, spent, transactions, onEdit, onDelete }: Bu
     setShowMenu(false);
   }, [onDelete]);
 
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      handleMenuClose();
+    }
+  }, [handleMenuClose]);
+
   useEffect(() => {
     if (!showMenu) return;
 
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        handleMenuClose();
-      }
-    };
-
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [showMenu]);
+  }, [showMenu, handleEscape]);
 
   return (
     <Card className="bg-white p-6">
