@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import { Budget, Transaction } from '@/lib/types';
 import { formatCurrency, formatDate } from '@/lib/formatters';
@@ -15,23 +15,41 @@ interface BudgetCardProps {
 
 export const BudgetCard = ({ budget, spent, transactions, onEdit, onDelete }: BudgetCardProps) => {
   const [showMenu, setShowMenu] = useState(false);
-  const percentage = Math.min((spent / budget.maximum) * 100, 100);
-  const remaining = Math.max(0, budget.maximum - spent);
+  
+  // Memoize calculations to prevent unnecessary recalculations
+  const percentage = useMemo(() => Math.min((spent / budget.maximum) * 100, 100), [spent, budget.maximum]);
+  const remaining = useMemo(() => Math.max(0, budget.maximum - spent), [budget.maximum, spent]);
+  const latestTransactions = useMemo(
+    () => transactions.filter((t) => t.category === budget.category).slice(0, 3),
+    [transactions, budget.category]
+  );
 
-  const latestTransactions = transactions.filter((t) => t.category === budget.category).slice(0, 3);
+  // Memoize event handlers to prevent unnecessary re-renders
+  const handleMenuToggle = useCallback(() => setShowMenu((prev) => !prev), []);
+  const handleMenuClose = useCallback(() => setShowMenu(false), []);
+  
+  const handleEdit = useCallback(() => {
+    onEdit();
+    setShowMenu(false);
+  }, [onEdit]);
+  
+  const handleDelete = useCallback(() => {
+    onDelete();
+    setShowMenu(false);
+  }, [onDelete]);
+
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      handleMenuClose();
+    }
+  }, [handleMenuClose]);
 
   useEffect(() => {
     if (!showMenu) return;
 
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setShowMenu(false);
-      }
-    };
-
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [showMenu]);
+  }, [showMenu, handleEscape]);
 
   return (
     <Card className="bg-white p-6">
@@ -50,7 +68,7 @@ export const BudgetCard = ({ budget, spent, transactions, onEdit, onDelete }: Bu
             variant="ghost"
             size="icon-sm"
             className="rounded-lg p-2 hover:bg-gray-100"
-            onClick={() => setShowMenu(!showMenu)}
+            onClick={handleMenuToggle}
             aria-label={`Options for ${budget.category} budget`}
             aria-haspopup="menu"
             aria-expanded={showMenu}
@@ -67,7 +85,7 @@ export const BudgetCard = ({ budget, spent, transactions, onEdit, onDelete }: Bu
             <>
               <div
                 className="fixed inset-0 z-10"
-                onClick={() => setShowMenu(false)}
+                onClick={handleMenuClose}
                 aria-hidden="true"
               />
               <div
@@ -77,10 +95,7 @@ export const BudgetCard = ({ budget, spent, transactions, onEdit, onDelete }: Bu
               >
                 <Button
                   variant="ghost"
-                  onClick={() => {
-                    onEdit();
-                    setShowMenu(false);
-                  }}
+                  onClick={handleEdit}
                   className="h-auto w-full justify-start px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                   role="menuitem"
                 >
@@ -88,10 +103,7 @@ export const BudgetCard = ({ budget, spent, transactions, onEdit, onDelete }: Bu
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => {
-                    onDelete();
-                    setShowMenu(false);
-                  }}
+                  onClick={handleDelete}
                   className="h-auto w-full justify-start px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
                   role="menuitem"
                 >

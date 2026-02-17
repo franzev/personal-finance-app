@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import { Pot } from '@/lib/types';
 import { formatCurrency } from '@/lib/formatters';
@@ -14,20 +14,36 @@ interface PotCardProps {
 
 export const PotCard = ({ pot, onEdit, onDelete, onAddMoney, onWithdraw }: PotCardProps) => {
   const [showMenu, setShowMenu] = useState(false);
-  const percentage = Math.min((pot.total / pot.target) * 100, 100);
+  
+  // Memoize percentage calculation to prevent unnecessary recalculations
+  const percentage = useMemo(() => Math.min((pot.total / pot.target) * 100, 100), [pot.total, pot.target]);
+
+  // Memoize event handlers to prevent unnecessary re-renders
+  const handleMenuToggle = useCallback(() => setShowMenu((prev) => !prev), []);
+  const handleMenuClose = useCallback(() => setShowMenu(false), []);
+  
+  const handleEdit = useCallback(() => {
+    onEdit();
+    setShowMenu(false);
+  }, [onEdit]);
+  
+  const handleDelete = useCallback(() => {
+    onDelete();
+    setShowMenu(false);
+  }, [onDelete]);
+
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      handleMenuClose();
+    }
+  }, [handleMenuClose]);
 
   useEffect(() => {
     if (!showMenu) return;
 
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setShowMenu(false);
-      }
-    };
-
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [showMenu]);
+  }, [showMenu, handleEscape]);
 
   return (
     <Card className="bg-white p-5 md:p-6">
@@ -46,7 +62,7 @@ export const PotCard = ({ pot, onEdit, onDelete, onAddMoney, onWithdraw }: PotCa
             variant="ghost"
             size="icon-sm"
             className="rounded-lg p-2 hover:bg-gray-100"
-            onClick={() => setShowMenu(!showMenu)}
+            onClick={handleMenuToggle}
             aria-label={`Options for ${pot.name}`}
             aria-haspopup="menu"
             aria-expanded={showMenu}
@@ -63,7 +79,7 @@ export const PotCard = ({ pot, onEdit, onDelete, onAddMoney, onWithdraw }: PotCa
             <>
               <div
                 className="fixed inset-0 z-10"
-                onClick={() => setShowMenu(false)}
+                onClick={handleMenuClose}
                 aria-hidden="true"
               />
               <div
@@ -73,10 +89,7 @@ export const PotCard = ({ pot, onEdit, onDelete, onAddMoney, onWithdraw }: PotCa
               >
                 <Button
                   variant="ghost"
-                  onClick={() => {
-                    onEdit();
-                    setShowMenu(false);
-                  }}
+                  onClick={handleEdit}
                   className="h-auto w-full justify-start px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                   role="menuitem"
                 >
@@ -84,10 +97,7 @@ export const PotCard = ({ pot, onEdit, onDelete, onAddMoney, onWithdraw }: PotCa
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => {
-                    onDelete();
-                    setShowMenu(false);
-                  }}
+                  onClick={handleDelete}
                   className="h-auto w-full justify-start px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
                   role="menuitem"
                 >
