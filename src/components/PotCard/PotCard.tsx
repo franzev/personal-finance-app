@@ -43,7 +43,9 @@ export const PotCard = ({ pot, onEdit, onDelete, onAddMoney, onWithdraw }: PotCa
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [showMenu, handleMenuClose]);
+    // handleMenuClose is stable (memoized with empty deps), safe to omit from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showMenu]);
 
   return (
     <Card className="bg-white p-5 md:p-6">
