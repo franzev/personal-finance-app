@@ -48,9 +48,10 @@ export function useFormModal<TFormData extends FieldValues, TSubmitData = TFormD
   const onFormSubmit = async (data: TFormData) => {
     setSubmitError(null);
     try {
-      const transformedData = transformData
+      // If transformData is provided, use it; otherwise assume TFormData and TSubmitData are the same type
+      const transformedData: TSubmitData = transformData
         ? transformData(data)
-        : (data as unknown as TSubmitData);
+        : (data as TSubmitData);
       await Promise.resolve(onSubmit(transformedData));
       reset(defaultValuesRef.current);
       onOpenChange(false);
