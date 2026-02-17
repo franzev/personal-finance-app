@@ -49,8 +49,6 @@ export const BudgetCard = ({ budget, spent, transactions, onEdit, onDelete }: Bu
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-    // handleMenuClose is stable (memoized with empty deps), safe to omit from deps
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showMenu]);
 
   return (
