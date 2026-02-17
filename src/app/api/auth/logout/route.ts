@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 export async function POST() {
   try {
@@ -12,7 +13,7 @@ export async function POST() {
 
     return NextResponse.json({ message: 'Logged out successfully' });
   } catch (error) {
-    console.error('Logout error:', error);
+    logger.error('Logout error:', error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
