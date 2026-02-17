@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
       message: 'Password reset email sent. Please check your inbox.',
     });
   } catch (error) {
-    console.error('Forgot password error:', error);
+    logger.error('Forgot password error:', error);
 
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
